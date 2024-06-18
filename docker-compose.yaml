@@ -1,0 +1,115 @@
+services:
+
+## This is the name of the container we want to use
+  frontend:
+    image: frontend1:1 ## This is the image to use for the container
+
+    ## This is the port that we want to expose
+    ports:
+      - 80:80
+
+    ## this is the dependency that we want to mount
+    depends_on:
+      - mongodb
+
+    ## this is the restartup order to restart the container if it crashes
+    restart: always
+
+    ## this is the network that we want to mount to the container
+    networks:
+      - napa-network1
+
+
+## this is the name of another container we want to use 
+  backend:
+    image: backend2:2 ## this is the image to use for the container
+
+    ## this is the port that we want to expose
+    ports: 
+      - 3000:3000
+
+    ## this is the dependency that we want to mount
+    depends_on:
+      - mongodb
+
+    ## This is a startup order to restat the container if it crashes
+    restart: always
+
+    ## This is the volume that we want to mount
+    volumes:
+      - napa-volume:/home/container_vl
+
+    ## This is the network to we want to mount to the container
+    networks:
+      - napa-network1
+
+   
+  ## This is the database host we want to use to store data
+
+  mongodb: ## This is the name of the container
+
+    ## This is the image to use for the container
+    image: mongo:5.0
+
+
+    ## This is the startup order to restat the container if it crashes
+    restart: always
+
+    ## This is the volume that we want to mount
+    volumes:
+      - mongodb-volume:/data/db
+
+    ## This is the network we want to mount to the container
+    networks:
+      - napa-network1
+
+    ## This is the environment variables that we want to set for the DB container
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_DATABASE=napa
+
+  mongo-expresso: ## This is the image for mongo-express
+
+    ## This is the name of mongo-express image
+    image: mongo-express
+
+    ## This is the port that we want to expose
+    ports:
+      - 8081:8081
+
+    ## This is the startup order to restat the container if it crashes
+    restart: always
+
+    ## This is the dependency that we want to mount
+    depends_on:
+      - mongodb
+
+    ## This is the volume that we want to mount
+    volumes:
+      - mongodb-volume:/data/db
+
+    ## this is the network the container will be mounted to
+    networks:
+      - napa-network1
+
+    ## This is the environment variables that we want to set for the mongo-expresso container
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=password
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+      - ME_CONFIG_MONGODB_URL:mongodb://admin:password@mongo:27017
+
+## This is the configurations that makes the volume a global variable by proxy it becomes persistent
+volumes:
+  mongodb-volume:
+    driver: local
+  napa-volume:
+    driver: local
+
+## This is the configuration to make the network a global variable by proxy it becomes persistent
+networks:
+  napa-network1:
+    driver: bridge
+
+
